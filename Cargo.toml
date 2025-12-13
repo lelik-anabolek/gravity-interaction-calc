@@ -2,8 +2,10 @@
 name = "three-random-bodies"
 version = "0.0.1"
 edition = "2021"
-authors = ["Aleksi Batuhtin <full.naked.eye@gmail.com>"]
+authors = ["Aleksei Batuhtin <full.naked.eye@gmail.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rand = "0.8.5"
+rand = "0.9.2"
+nalgebra = "=0.33.2"
+ode_solvers = "0.6.1"
