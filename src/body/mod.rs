@@ -1,7 +1,7 @@
 pub mod body {
 
     use nalgebra::Vector3;
-    use rand::{rng, Rng};
+    use rand::{rng, RngExt};
     use std::f64::consts::PI;
     #[derive(Debug, Clone)]
     pub struct Body {
