@@ -2,7 +2,7 @@ use crate::body::Body;
 use nalgebra::{Matrix3, RowVector3, Vector3};
 const G: f64 = 1.0;
 
-pub fn calc_center_of_mass(bodies: &[Body; 3]) -> Vector3<f64> {
+pub fn calc_center_of_mass(bodies: &[Body]) -> Vector3<f64> {
     let mut weighted_sum = Vector3::zeros();
     let mut total_mass = 0.0;
 
@@ -14,7 +14,7 @@ pub fn calc_center_of_mass(bodies: &[Body; 3]) -> Vector3<f64> {
     weighted_sum / total_mass
 }
 
-pub fn has_collision(bodies: &[Body; 3]) -> bool {
+pub fn has_collision(bodies: &[Body]) -> bool {
     let n = bodies.len();
     for i in 0..n {
         for j in (i + 1)..n {
