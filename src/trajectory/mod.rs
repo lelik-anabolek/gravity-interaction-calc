@@ -1,85 +1,80 @@
-pub mod trajectory {
-    use crate::body::body::Body;
-    use nalgebra::{Matrix3, RowVector3, Vector3};
-    const G: f64 = 1.0;
+use crate::body::Body;
+use nalgebra::{Matrix3, RowVector3, Vector3};
+const G: f64 = 1.0;
 
-    pub fn calc_center_of_mass(bodies: &[Body; 3]) -> Vector3<f64> {
-        let mut weighted_sum = Vector3::zeros();
-        let mut total_mass = 0.0;
+pub fn calc_center_of_mass(bodies: &[Body; 3]) -> Vector3<f64> {
+    let mut weighted_sum = Vector3::zeros();
+    let mut total_mass = 0.0;
 
-        for b in bodies {
-            weighted_sum += b.position * b.mass;
-            total_mass += b.mass;
-        }
-
-        weighted_sum / total_mass
+    for b in bodies {
+        weighted_sum += b.position * b.mass;
+        total_mass += b.mass;
     }
 
-    pub fn has_collision(bodies: &[Body; 3]) -> bool {
-        let n = bodies.len();
-        for i in 0..n {
-            for j in (i + 1)..n {
-                let dist = (bodies[i].position - bodies[j].position).norm();
-                if dist <= bodies[i].radius + bodies[j].radius {
-                    return true;
-                }
+    weighted_sum / total_mass
+}
+
+pub fn has_collision(bodies: &[Body; 3]) -> bool {
+    let n = bodies.len();
+    for i in 0..n {
+        for j in (i + 1)..n {
+            let dist = (bodies[i].position - bodies[j].position).norm();
+            if dist <= bodies[i].radius + bodies[j].radius {
+                return true;
             }
         }
-        false
+    }
+    false
+}
+
+pub fn calc_gravity_acceleration(position: &Matrix3<f64>, mass_mat: &Matrix3<f64>) -> Matrix3<f64> {
+    let n = 3;
+
+    if n > 3 {
+        panic!("Possible to calculate only 3 body");
     }
 
-    pub fn calc_gravity_acceleration(
-        position: &Matrix3<f64>,
-        mass_mat: &Matrix3<f64>,
-    ) -> Matrix3<f64> {
-        let n = 3;
+    let x = position.row(0).transpose();
+    let y = position.row(1).transpose();
+    let z = position.row(2).transpose();
+    let ones = RowVector3::from_element(1.0);
+    let ones_transposed = ones.transpose();
 
-        if n > 3 {
-            panic!("Possible to calculate only 3 body");
-        }
+    let diff_x = (&x * ones.clone()) - (ones_transposed * x.transpose());
+    let diff_y = (&y * ones.clone()) - (ones_transposed * y.transpose());
+    let diff_z = (&z * ones.clone()) - (ones_transposed * z.transpose());
 
-        let x = position.row(0).transpose();
-        let y = position.row(1).transpose();
-        let z = position.row(2).transpose();
-        let ones = RowVector3::from_element(1.0);
-        let ones_transposed = ones.transpose();
+    let dist_sq = diff_x.component_mul(&diff_x)
+        + diff_y.component_mul(&diff_y)
+        + diff_z.component_mul(&diff_z);
 
-        let diff_x = (&x * ones.clone()) - (ones_transposed * x.transpose());
-        let diff_y = (&y * ones.clone()) - (ones_transposed * y.transpose());
-        let diff_z = (&z * ones.clone()) - (ones_transposed * z.transpose());
+    let mut dist_cube = dist_sq.map(|v| (v + 1e-12).powf(1.5));
 
-        let dist_sq = diff_x.component_mul(&diff_x)
-            + diff_y.component_mul(&diff_y)
-            + diff_z.component_mul(&diff_z);
-
-        let mut dist_cube = dist_sq.map(|v| (v + 1e-12).powf(1.5));
-
-        // ignore diagonal
-        for i in 0..n {
-            dist_cube[(i, i)] = f64::INFINITY;
-        }
-
-        let factor = mass_mat.component_div(&dist_cube);
-
-        let acceleration_x = diff_x.component_mul(&factor).row_sum() * G;
-        let acceleration_y = diff_y.component_mul(&factor).row_sum() * G;
-        let acceleration_z = diff_z.component_mul(&factor).row_sum() * G;
-
-        let mut acc = Matrix3::<f64>::zeros();
-
-        acc.set_row(0, &acceleration_x);
-        acc.set_row(1, &acceleration_y);
-        acc.set_row(2, &acceleration_z);
-
-        acc
+    // ignore diagonal
+    for i in 0..n {
+        dist_cube[(i, i)] = f64::INFINITY;
     }
+
+    let factor = mass_mat.component_div(&dist_cube);
+
+    let acceleration_x = diff_x.component_mul(&factor).row_sum() * G;
+    let acceleration_y = diff_y.component_mul(&factor).row_sum() * G;
+    let acceleration_z = diff_z.component_mul(&factor).row_sum() * G;
+
+    let mut acc = Matrix3::<f64>::zeros();
+
+    acc.set_row(0, &acceleration_x);
+    acc.set_row(1, &acceleration_y);
+    acc.set_row(2, &acceleration_z);
+
+    acc
 }
 
 #[cfg(test)]
 mod test {
     mod center_of_mass {
-        use crate::body::body::Body;
-        use crate::trajectory::trajectory::calc_center_of_mass;
+        use crate::body::Body;
+        use crate::trajectory::calc_center_of_mass;
 
         #[test]
         fn test_center_of_mass_basic() {
@@ -148,8 +143,8 @@ mod test {
     }
 
     mod has_collision {
-        use crate::body::body::Body;
-        use crate::trajectory::trajectory::has_collision;
+        use crate::body::Body;
+        use crate::trajectory::has_collision;
         use nalgebra::Vector3;
 
         fn body_at(x: f64, y: f64, z: f64, r: f64) -> Body {
@@ -228,7 +223,7 @@ mod test {
 
     mod calc_gravity_acceleration {
 
-        use crate::trajectory::trajectory::calc_gravity_acceleration;
+        use crate::trajectory::calc_gravity_acceleration;
         use nalgebra::{Matrix3, RowVector3};
 
         #[test]

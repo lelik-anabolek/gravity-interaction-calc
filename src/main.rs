@@ -1,7 +1,7 @@
 mod body;
 mod trajectory;
-use crate::body::body::Body;
-use crate::trajectory::trajectory::{calc_gravity_acceleration, has_collision};
+use crate::body::Body;
+use crate::trajectory::{calc_gravity_acceleration, has_collision};
 use nalgebra::{Matrix3, RowVector3, SVector, Vector3};
 use ode_solvers::{Dopri5, System};
 
