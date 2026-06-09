@@ -2,7 +2,7 @@ mod body;
 mod trajectory;
 use crate::body::Body;
 use crate::trajectory::{calc_gravity_acceleration, has_collision};
-use nalgebra::{Matrix3, RowVector3, SVector, Vector3};
+use nalgebra::{Matrix3xX, RowDVector, RowVector3, SVector, Vector3};
 use ode_solvers::{Dopri5, System};
 
 /*
@@ -42,22 +42,20 @@ pub fn init_state(bodies: &[Body; 3]) -> State {
 }
 
 struct ThreeBodySystem {
-    pub mass_mat: Matrix3<f64>,
-    pub bodies: [Body; 3],
+    pub masses: RowDVector<f64>,
+    pub bodies: Vec<Body>,
 }
 
 impl ThreeBodySystem {
-    pub fn init(bodies: &[Body; 3]) -> Self {
-        let mut mass_vec = RowVector3::<f64>::zeros();
+    pub fn init(bodies: &[Body]) -> Self {
+        let mut mass_vec = RowDVector::<f64>::zeros(bodies.len());
         for (i, b) in bodies.iter().enumerate() {
             mass_vec[i] = b.mass;
         }
 
-        let mass_mat = mass_vec.transpose() * RowVector3::<f64>::from_element(1.0);
-
         Self {
-            mass_mat,
-            bodies: bodies.clone(),
+            masses: mass_vec,
+            bodies: bodies.to_vec(),
         }
     }
 }
@@ -65,14 +63,14 @@ impl ThreeBodySystem {
 impl System<f64, State> for ThreeBodySystem {
     fn system(&self, _t: f64, y: &State, dy: &mut State) {
         let n = 3;
-        let mut pos = Matrix3::<f64>::zeros();
+        let mut pos = Matrix3xX::<f64>::zeros(n);
 
         for i in 0..n {
             let body_pos = RowVector3::<f64>::from_row_slice(&y.as_slice()[(i * 3)..(i * 3 + 3)]);
             pos.set_column(i, &body_pos.transpose());
         }
 
-        let acc = calc_gravity_acceleration(&pos, &self.mass_mat);
+        let acc = calc_gravity_acceleration(&pos, &self.masses);
 
         for i in 0..n {
             let skipper_pos = calc_skipper_pos(i);
