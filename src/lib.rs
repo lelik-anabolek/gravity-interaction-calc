@@ -4,6 +4,6 @@
 // bodies
 // system solver (start, stop)
 pub mod body;
+pub mod solver;
 pub mod trajectory;
-
 // pub mod solver;
