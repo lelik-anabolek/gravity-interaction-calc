@@ -15,5 +15,5 @@ Self-education pet project
 ## Nice to have
 
 - [ ] 2D or 3D calculation
-- [ ] interaction of more than 3 body
+- [x] interaction of more than 3 body
 - [ ] add possibility to select one of calculation methods: RK4, Dopri853, Euler etc,
