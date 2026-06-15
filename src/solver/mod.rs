@@ -108,10 +108,9 @@ fn init_state(bodies: &[Body]) -> State {
     state
 }
 
-#[derive(Debug)]
 pub struct IntegrationData {
-    x: Vec<f64>,
-    y: Vec<MatrixXx1<f64>>,
+    pub x: Vec<f64>,
+    pub y: Vec<MatrixXx1<f64>>,
 }
 
 pub fn integrate(
